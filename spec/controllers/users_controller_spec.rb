@@ -25,6 +25,18 @@ describe UsersController do
           @users << Factory(:user, :email => Factory.next(:email))
         end
       end
+      
+      describe "for admin users" do
+        before(:each) do
+          admin = Factory(:user, :email => "admin@example.com", :admin => true)
+          test_sign_in(admin)
+        end
+        
+        it "should have delete link" do
+          get :index
+          response.should have_selector("a", :content => "delete")
+        end
+      end
 
       it "should be successful" do
         get :index
@@ -48,6 +60,11 @@ describe UsersController do
         @users[0..2].each do |user|
           response.should have_selector("li", :content => user.name)
         end
+      end
+      
+      it "should not have delete link" do
+        get :index
+        response.should_not have_selector("a", :content => "delete")
       end
 
       it "should paginate users" do
@@ -350,18 +367,24 @@ describe UsersController do
     describe "as an admin user" do
 
       before(:each) do
-        admin = Factory(:user, :email => "admin@example.com", :admin => true)
-        test_sign_in(admin)
+        @admin = Factory(:user, :email => "admin@example.com", :admin => true)
+        test_sign_in(@admin)
       end
 
       it "should destroy the user" do
         lambda do
-          delete :destroy, :id => @user
+          delete :destroy, :id => @user.id
         end.should change(User, :count).by(-1)
+      end
+      
+      it "should not destroy the admin user himself" do
+        lambda do
+          delete :destroy, :id => @admin.id
+        end.should_not change(User, :count)
       end
 
       it "should redirect to the users page" do
-        delete :destroy, :id => @user
+        delete :destroy, :id => @user.id
         response.should redirect_to(users_path)
       end
     end
