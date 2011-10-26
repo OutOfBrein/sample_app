@@ -95,6 +95,19 @@ describe UsersController do
   end
   
   describe "GET 'new'" do
+  
+    describe "for signed-in user" do
+      
+      before(:each) do
+        @user = test_sign_in(Factory(:user))
+      end
+    
+      it "should redirect to home page" do
+        get :new
+        response.should redirect_to root_path
+      end
+      
+    end
     
     it "should be successful" do
       get :new
@@ -129,6 +142,21 @@ describe UsersController do
   end
   
   describe "POST 'create'" do
+  
+    describe "for signed-in user" do
+      
+      before(:each) do
+        @user = test_sign_in(Factory(:user))
+        @attr = { :name => "New User", :email => "user@example.com",
+                  :password => "foobar", :password_confirmation => "foobar" }
+      end
+    
+      it "should redirect to home page" do
+        post :create, :user => @attr
+        response.should redirect_to root_path
+      end
+      
+    end
 
     describe "failure" do
 
@@ -184,7 +212,7 @@ describe UsersController do
     end
     
     describe "GET 'edit'" do
-
+    
       before(:each) do
         @user = Factory(:user)
         test_sign_in(@user)
